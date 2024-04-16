@@ -1,36 +1,67 @@
 import React, {useState, useEffect}  from 'react';
 import { Link } from 'react-router-dom';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import './App.css';
 import LogoUGA from './logo';
-import Emargement from './emargement';
-import Creneaux from './creneaux';
-import AbsenceTable from './AbsenceTable';
 
-
-function App() {
-    const [data, setData] = useState([]);
-   useEffect(() => {
-      // Fonction pour récupérer les données depuis la base de données
-      const fetchData = async () => {
-        try {
-          // Remplacer cette partie avec la logique de récupération de données depuis la base de données
-          // Exemple d'utilisation d'une API
-          const response = await fetch('http://localhost:3001/rpc/get_creneaux?value=1');
-          const jsonData = await response.json();
-          setData(jsonData);
-        } catch (error) {
-          console.error('Erreur lors de la récupération des données:', error);
-        }
-      };
-  
-      fetchData();
-    }, []);
-  return (
+function Emargement(){
+    const [etudiants, setEtudiants] = useState([]);
+    const [presence, setPresence] = useState([]);
     
-    <div className="App">
-      
-      <div className="shadow-md w-full relative top-0 left-0">
+    const postData = {
+      id : 200,
+      nom: "Idrissi",
+      prenom:"Taha",
+      id_promo: 2,
+      gestionnaire_id: 2,
+      // Add other fields as necessary
+    };
+  
+    useEffect(() => {
+      fetch("http://localhost:3001/etudiant")
+        .then((response) => response.json())
+        .then((data) => setEtudiants(data));
+    }, []);
+  
+    const handlePresenceChange = (idEtudiant, etat) => {
+      setPresence((prevPresence) => {
+        const newPresence = prevPresence.slice();
+        newPresence[idEtudiant] = etat;
+        return newPresence;
+      });
+    };
+  
+    const handleSave = () => {
+      const etudiantsPresent = etudiants.filter(etudiant => presence[etudiant.id] === "present");
+      const postData = etudiantsPresent.map(etudiant => ({
+        creneau_id:2,
+        etudiant_id: etudiant.id,
+        // Ajoutez d'autres champs si nécessaire
+      }));
+      fetch("http://localhost:3001/presence", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postData),
+      }).then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      // Handle successful response here if needed
+      console.log('Data inserted successfully');
+    })
+    .catch(error => {
+      // Handle error here
+      console.error('Error inserting data:', error);
+    });;
+    };
+    
+    
+    
+
+    return(
+        <main>
+        <div className="App">
+       <div className="shadow-md w-full relative top-0 left-0">
       <div className="md:flex items-center justify-between bg-teal-300 py-2 md:px-10 px-7 h-24">
         <div className="font-bold text-2x1 cursor-pointer flex items-center font-[Poppins] text-gray-800 justify-between">
           <LogoUGA />
@@ -101,49 +132,52 @@ function App() {
     </div>
   </div>
 </nav>
-
-      <main className='m-2.5'>
-      <h1 className='text-3xl'>Absences à justifier ( 5 derniers jours )</h1>
-      <table class="table-auto m-auto border-collapse border border-slate-400">
+</div>
+<table class="table-auto m-auto border-collapse border border-slate-400">
   <thead className='bg-blue-950 text-orange-600'>
     <tr>
-      <th class="border border-slate-300 ">Date & Heure</th>
-      <th class="border border-slate-300 ">Matière</th>
-      <th class="border border-slate-300 ">Type de séance</th>
-      <th class="border border-slate-300 ">Enseignant</th>
-      <th class="border border-slate-300 ">Jours restants</th>
-      <th class="border border-slate-300 ">Action</th>
+      <th class="border border-slate-300 ">Nom et Prénom</th>
+      <th class="border border-slate-300 ">Présent</th>
+      <th class="border border-slate-300 ">Absent</th>
+      <th class="border border-slate-300 ">Retard</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td class="border border-slate-300">2024-03-11 10:15-11:45</td>
-      <td class="border border-slate-300">Systèmes</td>
-      <td class="border border-slate-300">CM</td>
-      <td class="border border-slate-300">JEROME David</td>
-      <td class="border border-slate-300">3</td>
-      <td class="border border-slate-300"><button>Justifier</button></td>
-    </tr>
-    <tr>
-      <td class="border border-slate-300">11/03/2024-13-30-15:30</td>
-      <td class="border border-slate-300">WEB</td>
-      <td class="border border-slate-300">CM</td>
-      <td class="border border-slate-300">Quentin Roy</td>
-      <td class="border border-slate-300">3</td>
-      <td class="border border-slate-300"><button>Justifier</button></td>
-    </tr>
-    <tr>
-      <td class="border border-slate-300">12/03/2024-10:00-12:00</td>
-      <td class="border border-slate-300">Modélisation des fonctions langagières</td>
-      <td class="border border-slate-300">CM</td>
-      <td class="border border-slate-300">KANDEL Sonia</td>
-      <td class="border border-slate-300">4</td>
-      <td class="border border-slate-300"><button>Justifier</button></td>
-    </tr>
-  </tbody>
-</table>
-      </main>
-    </div>
-  );
+  {etudiants.map((etudiant) => (
+              <tr key={etudiant.id}>
+                <td>{etudiant.nom} {etudiant.prenom}</td>
+                <td>
+                  <input
+                    type="radio"
+                    name={etudiant.id}
+                    value="present"
+                    checked={presence[etudiant.id] === "present"}
+                    onChange={() => handlePresenceChange(etudiant.id, "present")}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="radio"
+                    name={etudiant.id}
+                    value="retard"
+                    checked={presence[etudiant.id] === "retard"}
+                    onChange={() => handlePresenceChange(etudiant.id, "retard")}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="radio"
+                    name={etudiant.id}
+                    value="excuse"
+                    checked={presence[etudiant.id] === "excuse"}
+                    onChange={() => handlePresenceChange(etudiant.id, "excuse")}
+                  />
+                </td>
+              </tr>
+            ))}
+    </tbody>
+    </table>       <button onClick={handleSave}>Enregistrer</button>
+</main>
+    );
 }
-export default App;
+export default Emargement;

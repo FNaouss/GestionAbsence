@@ -1,36 +1,20 @@
-import React, {useState, useEffect}  from 'react';
-import { Link } from 'react-router-dom';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import './App.css';
+import React, { useState, useEffect } from 'react';
 import LogoUGA from './logo';
-import Emargement from './emargement';
-import Creneaux from './creneaux';
-import AbsenceTable from './AbsenceTable';
 
+const AbsenceTable = () => {
+  const [absencesData, setAbsencesData] = useState([]);
 
-function App() {
-    const [data, setData] = useState([]);
-   useEffect(() => {
-      // Fonction pour récupérer les données depuis la base de données
-      const fetchData = async () => {
-        try {
-          // Remplacer cette partie avec la logique de récupération de données depuis la base de données
-          // Exemple d'utilisation d'une API
-          const response = await fetch('http://localhost:3001/rpc/get_creneaux?value=1');
-          const jsonData = await response.json();
-          setData(jsonData);
-        } catch (error) {
-          console.error('Erreur lors de la récupération des données:', error);
-        }
-      };
-  
-      fetchData();
-    }, []);
+  useEffect(() => {
+    // Fetch absence data from database
+    fetch('http://localhost:3001/rpc/get_absences?etudiant_id=4')
+      .then((response) => response.json())
+      .then((data) => setAbsencesData(data));
+  }, []);
+
   return (
-    
-    <div className="App">
-      
-      <div className="shadow-md w-full relative top-0 left-0">
+    <main>
+        <div className="App">
+       <div className="shadow-md w-full relative top-0 left-0">
       <div className="md:flex items-center justify-between bg-teal-300 py-2 md:px-10 px-7 h-24">
         <div className="font-bold text-2x1 cursor-pointer flex items-center font-[Poppins] text-gray-800 justify-between">
           <LogoUGA />
@@ -101,49 +85,40 @@ function App() {
     </div>
   </div>
 </nav>
-
-      <main className='m-2.5'>
-      <h1 className='text-3xl'>Absences à justifier ( 5 derniers jours )</h1>
-      <table class="table-auto m-auto border-collapse border border-slate-400">
+</div>
+<table class="table-auto m-auto border-collapse border border-slate-400">
   <thead className='bg-blue-950 text-orange-600'>
-    <tr>
-      <th class="border border-slate-300 ">Date & Heure</th>
-      <th class="border border-slate-300 ">Matière</th>
-      <th class="border border-slate-300 ">Type de séance</th>
-      <th class="border border-slate-300 ">Enseignant</th>
-      <th class="border border-slate-300 ">Jours restants</th>
-      <th class="border border-slate-300 ">Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="border border-slate-300">2024-03-11 10:15-11:45</td>
-      <td class="border border-slate-300">Systèmes</td>
-      <td class="border border-slate-300">CM</td>
-      <td class="border border-slate-300">JEROME David</td>
-      <td class="border border-slate-300">3</td>
-      <td class="border border-slate-300"><button>Justifier</button></td>
-    </tr>
-    <tr>
-      <td class="border border-slate-300">11/03/2024-13-30-15:30</td>
-      <td class="border border-slate-300">WEB</td>
-      <td class="border border-slate-300">CM</td>
-      <td class="border border-slate-300">Quentin Roy</td>
-      <td class="border border-slate-300">3</td>
-      <td class="border border-slate-300"><button>Justifier</button></td>
-    </tr>
-    <tr>
-      <td class="border border-slate-300">12/03/2024-10:00-12:00</td>
-      <td class="border border-slate-300">Modélisation des fonctions langagières</td>
-      <td class="border border-slate-300">CM</td>
-      <td class="border border-slate-300">KANDEL Sonia</td>
-      <td class="border border-slate-300">4</td>
-      <td class="border border-slate-300"><button>Justifier</button></td>
-    </tr>
-  </tbody>
-</table>
-      </main>
-    </div>
+        <tr>
+          <th>Date et heure</th>
+          <th>Matière</th>
+          <th>Type de séance</th>
+          <th>Enseignant</th>
+          <th>Jours restants</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {absencesData.map((absence) => (
+          <tr key={absence.id}>
+            <td>{absence.date_et_heure}</td>
+            <td>{absence.nom_matiere}</td>
+            <td>{absence.nom_seance}</td>
+            <td>{absence.nom_enseignant}</td>
+            <td>{absence.jours_restants }</td>
+            <td>
+              <button onClick={() => handleJustifyAbsence(absence)}>Justifier</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    </main>
   );
-}
-export default App;
+};
+
+const handleJustifyAbsence = (absence) => {
+  // Handle justification logic here
+  // This could involve opening a modal or redirecting to a justification page
+};
+
+export default AbsenceTable;

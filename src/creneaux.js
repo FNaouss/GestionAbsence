@@ -1,36 +1,31 @@
 import React, {useState, useEffect}  from 'react';
 import { Link } from 'react-router-dom';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import './App.css';
 import LogoUGA from './logo';
-import Emargement from './emargement';
-import Creneaux from './creneaux';
-import AbsenceTable from './AbsenceTable';
 
-
-function App() {
-    const [data, setData] = useState([]);
-   useEffect(() => {
-      // Fonction pour récupérer les données depuis la base de données
-      const fetchData = async () => {
-        try {
-          // Remplacer cette partie avec la logique de récupération de données depuis la base de données
-          // Exemple d'utilisation d'une API
-          const response = await fetch('http://localhost:3001/rpc/get_creneaux?value=1');
-          const jsonData = await response.json();
-          setData(jsonData);
-        } catch (error) {
-          console.error('Erreur lors de la récupération des données:', error);
-        }
-      };
+function Creneaux(){
+    const [creneaux, setCreneaux] = useState([]);
+    const [presence, setPresence] = useState([]);
   
-      fetchData();
+    useEffect(() => {
+      fetch("http://localhost:3001/rpc/get_cours_enseignant?id_enseignant=1")
+        .then((response) => response.json())
+        .then((data) => setCreneaux(data));
     }, []);
-  return (
-    
-    <div className="App">
-      
-      <div className="shadow-md w-full relative top-0 left-0">
+  
+    const handleSave = () => {
+      fetch("", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(presence),
+      });
+    };
+
+    return(
+        <main>
+        <div className="App">
+       <div className="shadow-md w-full relative top-0 left-0">
       <div className="md:flex items-center justify-between bg-teal-300 py-2 md:px-10 px-7 h-24">
         <div className="font-bold text-2x1 cursor-pointer flex items-center font-[Poppins] text-gray-800 justify-between">
           <LogoUGA />
@@ -101,49 +96,32 @@ function App() {
     </div>
   </div>
 </nav>
-
-      <main className='m-2.5'>
-      <h1 className='text-3xl'>Absences à justifier ( 5 derniers jours )</h1>
-      <table class="table-auto m-auto border-collapse border border-slate-400">
+</div>
+<table class="table-auto m-auto border-collapse border border-slate-400">
   <thead className='bg-blue-950 text-orange-600'>
     <tr>
-      <th class="border border-slate-300 ">Date & Heure</th>
+      <th class="border border-slate-300 ">Heure de début</th>
+      <th class="border border-slate-300 ">Promo</th>
       <th class="border border-slate-300 ">Matière</th>
-      <th class="border border-slate-300 ">Type de séance</th>
-      <th class="border border-slate-300 ">Enseignant</th>
-      <th class="border border-slate-300 ">Jours restants</th>
+      <th class="border border-slate-300 ">Séance</th>
+      <th class="border border-slate-300 ">Groupe</th>
       <th class="border border-slate-300 ">Action</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td class="border border-slate-300">2024-03-11 10:15-11:45</td>
-      <td class="border border-slate-300">Systèmes</td>
-      <td class="border border-slate-300">CM</td>
-      <td class="border border-slate-300">JEROME David</td>
-      <td class="border border-slate-300">3</td>
-      <td class="border border-slate-300"><button>Justifier</button></td>
-    </tr>
-    <tr>
-      <td class="border border-slate-300">11/03/2024-13-30-15:30</td>
-      <td class="border border-slate-300">WEB</td>
-      <td class="border border-slate-300">CM</td>
-      <td class="border border-slate-300">Quentin Roy</td>
-      <td class="border border-slate-300">3</td>
-      <td class="border border-slate-300"><button>Justifier</button></td>
-    </tr>
-    <tr>
-      <td class="border border-slate-300">12/03/2024-10:00-12:00</td>
-      <td class="border border-slate-300">Modélisation des fonctions langagières</td>
-      <td class="border border-slate-300">CM</td>
-      <td class="border border-slate-300">KANDEL Sonia</td>
-      <td class="border border-slate-300">4</td>
-      <td class="border border-slate-300"><button>Justifier</button></td>
-    </tr>
-  </tbody>
-</table>
-      </main>
-    </div>
-  );
+  {creneaux.map((c) => (
+              <tr key={c.creneau_id}>
+                <td>{c.date_heure}</td>
+                <td>{c.nom_promotion}</td>
+                <td>{c.nom_matiere}</td>
+                <td>{c.nom_seance}</td>
+                <td>{c.nom_groupe}</td>
+                <td><a href={`/emargement?id=${c.creneau_id}`}><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M21.4086 9.35258C23.5305 10.5065 23.5305 13.4935 21.4086 14.6474L8.59662 21.6145C6.53435 22.736 4 21.2763 4 18.9671L4 5.0329C4 2.72368 6.53435 1.26402 8.59661 2.38548L21.4086 9.35258Z" fill="#1C274C"></path> </g></svg></a></td>
+              </tr>
+            ))}
+    </tbody>
+    </table>
+</main>
+    );
 }
-export default App;
+export default Creneaux;

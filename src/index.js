@@ -3,11 +3,23 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Emargement from './emargement';
+import Creneaux from './creneaux';
+import AbsenceTable from './AbsenceTable';
+import Formulaire from './Formulaire';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <App />
+  <React.StrictMode><BrowserRouter>
+  <Routes>
+    <Route path="/" element={<App />} />
+    <Route path="/emargement" element={<Emargement />} />
+    <Route path="/creneaux" element={<Creneaux />} />
+    <Route path="/absences" element={<AbsenceTable />} />
+    <Route path="/formulaire" element={<Formulaire />} />
+  </Routes>
+</BrowserRouter>
   </React.StrictMode>
 );
 
