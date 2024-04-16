@@ -1,11 +1,14 @@
 import React, {useState, useEffect}  from 'react';
-import { Link } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import LogoUGA from './logo';
 
 function Emargement(){
-    const [etudiants, setEtudiants] = useState([]);
-    const [presence, setPresence] = useState([]);
-    
+  const location = useLocation();
+  const id = new URLSearchParams(location.search).get('id');
+  console.log('id:', id); 
+  const [etudiants, setEtudiants] = useState([]);
+  const [presence, setPresence] = useState([]);
+    /*
     const postData = {
       id : 200,
       nom: "Idrissi",
@@ -13,14 +16,28 @@ function Emargement(){
       id_promo: 2,
       gestionnaire_id: 2,
       // Add other fields as necessary
-    };
+    };*/
   
     useEffect(() => {
-      fetch("http://localhost:3001/etudiant")
-        .then((response) => response.json())
-        .then((data) => setEtudiants(data));
-    }, []);
-  
+      // Ensure that `id` is defined and has a valid value
+      if (id) {
+        fetch(`http://localhost:3001/rpc/get_etudiants_cours?id_creneau=${id}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => setEtudiants(data))
+          .catch((error) => {
+            console.log('Fetch error: ', error);
+          });
+      }
+    }, [id]); // Add `id` as a dependency to the useEffect hook
+  /* emargement.js:22 
+ 
+ GET http://localhost:3001/rpc/get_etudiants_cours?id_creneau=3 404 (Not Found)
+ */
     const handlePresenceChange = (idEtudiant, etat) => {
       setPresence((prevPresence) => {
         const newPresence = prevPresence.slice();
@@ -32,7 +49,7 @@ function Emargement(){
     const handleSave = () => {
       const etudiantsPresent = etudiants.filter(etudiant => presence[etudiant.id] === "present");
       const postData = etudiantsPresent.map(etudiant => ({
-        creneau_id:2,
+        creneau_id:id,
         etudiant_id: etudiant.id,
         // Ajoutez d'autres champs si nécessaire
       }));
@@ -153,6 +170,7 @@ function Emargement(){
                     value="present"
                     checked={presence[etudiant.id] === "present"}
                     onChange={() => handlePresenceChange(etudiant.id, "present")}
+                    // I want once i check the box present it will be updated on the table presence in the database
                   />
                 </td>
                 <td>

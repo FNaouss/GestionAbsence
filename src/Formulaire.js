@@ -45,8 +45,17 @@ const Formulaire = () => {
           type="date"
           id="dateDebut"
           value={dateDebut}
-          onChange={(event) => setDateDebut(new Date(event.target.value))}
+          onChange={(event) => {const date = new Date(event.target.value);
+  
+            const year = date.getFullYear();
+            const month = ("0" + (date.getMonth() + 1)).slice(-2);
+            const day = ("0" + date.getDate()).slice(-2);
+          
+            const formattedDate = `${year}-${month}-${day}`;
+            console.log(formattedDate);
+            setDateDebut(formattedDate); /*The specified value "Wed Apr 10 2024 02:00:00 GMT+0200 (heure dâÃ©tÃ© dâEurope centrale)" does not conform to the required format, "yyyy-MM-dd".*/}}
         />
+        
         </div>
       <div className="sm:col-span-3">
         <label htmlFor="dateFin">Date de fin : </label>
@@ -54,7 +63,15 @@ const Formulaire = () => {
           type="date"
           id="dateFin"
           value={dateFin}
-          onChange={(event) => setDateFin(new Date(event.target.value))}
+          onChange={(event) => {const date = new Date(event.target.value);
+  
+            const year = date.getFullYear();
+            const month = ("0" + (date.getMonth() + 1)).slice(-2);
+            const day = ("0" + date.getDate()).slice(-2);
+          
+            const formattedDate = `${year}-${month}-${day}`;
+            console.log(formattedDate);
+            setDateFin(formattedDate);}}
         />
       </div>
       <div class="sm:col-span-3">
@@ -70,6 +87,7 @@ const Formulaire = () => {
             </select>
           </div>
         </div>
+        
       {motif === 'Autre' && (
         <div className="form-group">
           <label htmlFor="excuse">Excuse (si motif = autre):</label>
