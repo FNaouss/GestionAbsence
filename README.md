@@ -1,6 +1,6 @@
 # Project Name
 
-This is a brief description of what your project is about.
+This is a web app that manages attendance of students at L3 MIASHS at UGA.
 
 ## Getting Started
 
@@ -53,5 +53,5 @@ This project is open for next updates by the next L3 MIASHS of Université Greno
 - NodeJs
 
 ### Contact
-If you want contact me on Linkedin : https://www.linkedin.com/in/nacer-eddine-fardous-1a9a95233/
+If you want to contact me on Linkedin : https://www.linkedin.com/in/nacer-eddine-fardous-1a9a95233/
 And here is the email of my colleague : girincuticarol@gmail.com
