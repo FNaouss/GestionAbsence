@@ -8,6 +8,7 @@ import Emargement from './emargement';
 import Creneaux from './creneaux';
 import AbsenceTable from './AbsenceTable';
 import Formulaire from './Formulaire';
+import Gsabsences from './gsabsences';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -18,6 +19,7 @@ root.render(
     <Route path="/creneaux" element={<Creneaux />} />
     <Route path="/absences" element={<AbsenceTable />} />
     <Route path="/formulaire" element={<Formulaire />} />
+    <Route path="/gestion_justif" element={<Gsabsences />} />
   </Routes>
 </BrowserRouter>
   </React.StrictMode>

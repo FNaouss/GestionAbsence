@@ -1,3 +1,4 @@
+import React from "react";
 import UGA from "./images/uga.png";
 
 function LogoUGA() {

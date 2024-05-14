@@ -1,51 +1,90 @@
 import React, {useState, useEffect}  from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 import LogoUGA from './logo';
-import Emargement from './emargement';
-import Creneaux from './creneaux';
-import AbsenceTable from './AbsenceTable';
+import { ReactComponent as RejectSvg } from './images/reject-cross-delete-svgrepo-com.svg';
 
 
-// Outside your JSX
-function calculateRemainingDays(absenceDate) {
-  // Créez un objet Date avec la date d'absence
-  let date = new Date(absenceDate);
-
-  // Ajoutez 5 jours à la date
-  date.setDate(date.getDate() + 4);
-
-  // Obtenez la date d'aujourd'hui
-  let today = new Date();
-
-  // Calculez la différence en jours
-  let diffInTime = date.getTime() - today.getTime();
-  let diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
-
-  return diffInDays;
-}
-function App() {
+function Gsabsences() {
   let navigate = useNavigate();
 
     const [data, setData] = useState([]);
+    const [document, setDocument] = useState(null);
+
    useEffect(() => {
       // Fonction pour récupérer les données depuis la base de données
       const fetchData = async () => {
         try {
           // Remplacer cette partie avec la logique de récupération de données depuis la base de données
           // Exemple d'utilisation d'une API
-          const response = await fetch('http://localhost:3001/rpc/get_abs_details?etudiant_id=3');
+          const response = await fetch('http://localhost:3001/rpc/get_justifs?id_gest=1');
           const jsonData = await response.json();
           setData(jsonData);
         } catch (error) {
           console.error('Erreur lors de la récupération des données:', error);
         }
       };
-  
       fetchData();
     }, []);
-    
+    const handleClick = async (id) =>{
+        try {
+            const response = await fetch(`http://localhost:3001/justificatif?id=eq.${id}`);
+
+            const jsonData= await response.json();
+            console.log(jsonData[0].document);
+            const byteArray = new Uint8Array(jsonData[0].document.data);
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            setDocument(url);
+          } catch (error) {
+            console.error('Failed to load document:', error);
+          }
+    }
+    async function validerJustif(id) {
+  try {
+    const response = await fetch(`http://localhost:3001/justificatif?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        etatvalidation: 1, // Remplacez 'validé' par la valeur que vous voulez
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error('An error occurred while validating the justification', error);
+  }
+}
+
+async function rejeterJustif(id) {
+  try {
+    const response = await fetch(`http://localhost:3001/justificatif?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        etatvalidation: -1, // Remplacez '0' par la valeur que vous voulez
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error('An error occurred while rejecting the justification', error);
+  }
+}
   return (
     
     <div className="App">
@@ -123,34 +162,41 @@ function App() {
 </nav>
 
       <main className='m-2.5'>
-      <h1 className='text-3xl'>Absences à justifier ( 5 derniers jours )</h1>
+      <h1 className='text-3xl'>Justificatifs à valider</h1>
       <table class="table-auto m-auto border-collapse border border-slate-400">
   <thead className='bg-blue-950 text-orange-600'>
     <tr>
-      <th class="border border-slate-300 ">Date & Heure</th>
-      <th class="border border-slate-300 ">Matière</th>
-      <th class="border border-slate-300 ">Type de séance</th>
-      <th class="border border-slate-300 ">Enseignant</th>
-      <th class="border border-slate-300 ">Jours restants</th>
+      <th class="border border-slate-300 ">Date & Heure de début</th>
+      <th class="border border-slate-300 ">Date & Heure de fin</th>
+      <th class="border border-slate-300 ">Etudiant</th>
+      <th class="border border-slate-300 ">Promo</th>
+      <th class="border border-slate-300 ">Motif</th>
+      <th class="border border-slate-300 ">Document</th>
       <th class="border border-slate-300 ">Action</th>
     </tr>
   </thead>
   <tbody>
-  {data.map((c) => (
-                            <tr key={c.id}>
-                              <td>{c.date_et_heure}</td>
-                              <td>{c.nom_matiere}</td>
-                              <td>{c.nom_seance}</td>
-                              <td>{c.nom_enseignant}</td>
-                              <td>{calculateRemainingDays(c.date_et_heure)}</td>
-                              <td><a href={`/formulaire?id=${c.id}`} class="rounded-md bg-indigo-600 px-3.5 py-1.4 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Justifier</a></td>
+  {data.map((j) => (
+                            <tr key={j.id}>
+                              <td>{j.date_debut}</td>
+                              <td>{j.date_fin}</td>
+                              <td>{j.nom_etu} {j.prenom_etu}</td>
+                              <td>{j.promo}</td>
+                              <td>{j.motif}</td>
+                              <td><button onClick={()=>handleClick(j.id)}>Visualiser</button></td>
+                              <td class="h-12 flex"><button onClick={()=>validerJustif(j.id)}><svg class="w-12"  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#00c230"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path opacity="0.5" d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" fill="#ffffff"></path> <path d="M16.0303 8.96967C16.3232 9.26256 16.3232 9.73744 16.0303 10.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303L7.96967 13.0303C7.67678 12.7374 7.67678 12.2626 7.96967 11.9697C8.26256 11.6768 8.73744 11.6768 9.03033 11.9697L10.5 13.4393L12.7348 11.2045L14.9697 8.96967C15.2626 8.67678 15.7374 8.67678 16.0303 8.96967Z" fill="#ffffff"></path> </g></svg></button>
+                              <button onClick={()=>rejeterJustif(j.id)}><RejectSvg class="w-12 h-12"/></button>
+                              </td>
+                              
                             </tr>
                   ))}
+                  
                 </tbody>
               </table>
+                  {document && <iframe src={document} width="100%" height="600px"/>}
               
                     </main>
     </div>
   );
 }
-export default App;
+export default Gsabsences;

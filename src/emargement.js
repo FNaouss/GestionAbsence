@@ -1,5 +1,5 @@
 import React, {useState, useEffect}  from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import LogoUGA from './logo';
 
 function Emargement(){
@@ -8,16 +8,7 @@ function Emargement(){
   console.log('id:', id); 
   const [etudiants, setEtudiants] = useState([]);
   const [presence, setPresence] = useState([]);
-    /*
-    const postData = {
-      id : 200,
-      nom: "Idrissi",
-      prenom:"Taha",
-      id_promo: 2,
-      gestionnaire_id: 2,
-      // Add other fields as necessary
-    };*/
-  
+      let navigate = useNavigate();
     useEffect(() => {
       // Ensure that `id` is defined and has a valid value
       if (id) {
@@ -47,10 +38,15 @@ function Emargement(){
     };
   
     const handleSave = () => {
-      const etudiantsPresent = etudiants.filter(etudiant => presence[etudiant.id] === "present");
+      //const etudiantsPresent = etudiants.filter(etudiant => presence[etudiant.etudiant_id] === "present");
+const etudiantsPresent = etudiants.filter(etudiant => {
+  console.log('etudiant_id:', etudiant.etudiant_id);
+  console.log('presence[etudiant_id]:', presence[etudiant.etudiant_id]);
+  return presence[etudiant.etudiant_id] === "present";
+});
       const postData = etudiantsPresent.map(etudiant => ({
         creneau_id:id,
-        etudiant_id: etudiant.id,
+        etudiant_id: etudiant.etudiant_id,
         // Ajoutez d'autres champs si nécessaire
       }));
       fetch("http://localhost:3001/presence", {
@@ -64,13 +60,32 @@ function Emargement(){
         throw new Error('Network response was not ok');
       }
       // Handle successful response here if needed
+      console.log(postData)
       console.log('Data inserted successfully');
-    })
-    .catch(error => {
-      // Handle error here
-      console.error('Error inserting data:', error);
-    });;
-    };
+      navigate("/creneaux");
+      return fetch(`http://localhost:3001/creneau?id=eq.${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ appelfait: 1 }),
+  });
+})
+.then(response => {
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  console.log('Creneau updated successfully');
+  navigate("/creneaux");
+})
+.catch(error => {
+  // Handle error here
+  console.error('Error inserting data:', error);
+}); };
+
+    function handleAddStudent() {
+      navigate("/student-list");
+    }
     
     
     
@@ -156,20 +171,20 @@ function Emargement(){
       <th class="border border-slate-300 ">Nom et Prénom</th>
       <th class="border border-slate-300 ">Présent</th>
       <th class="border border-slate-300 ">Absent</th>
-      <th class="border border-slate-300 ">Retard</th>
+      <th class="border border-slate-300 ">Excuse</th>
     </tr>
   </thead>
   <tbody>
   {etudiants.map((etudiant) => (
-              <tr key={etudiant.id}>
+              <tr key={etudiant.etudiant_id}>
                 <td>{etudiant.nom} {etudiant.prenom}</td>
                 <td>
                   <input
                     type="radio"
                     name={etudiant.id}
                     value="present"
-                    checked={presence[etudiant.id] === "present"}
-                    onChange={() => handlePresenceChange(etudiant.id, "present")}
+                    checked={presence[etudiant.etudiant_id] === "present"}
+                    onChange={() => handlePresenceChange(etudiant.etudiant_id, "present")}
                     // I want once i check the box present it will be updated on the table presence in the database
                   />
                 </td>
@@ -177,9 +192,9 @@ function Emargement(){
                   <input
                     type="radio"
                     name={etudiant.id}
-                    value="retard"
-                    checked={presence[etudiant.id] === "retard"}
-                    onChange={() => handlePresenceChange(etudiant.id, "retard")}
+                    value="absent"
+                    checked={presence[etudiant.etudiant_id] === "absent"}
+                    onChange={() => handlePresenceChange(etudiant.etudiant_id, "absent")}
                   />
                 </td>
                 <td>
@@ -194,7 +209,14 @@ function Emargement(){
               </tr>
             ))}
     </tbody>
-    </table>       <button onClick={handleSave}>Enregistrer</button>
+    </table>     
+     <div class="mt-10 flex items-center justify-center gap-x-6">
+     <button class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      onClick={handleSave}>Enregistrer</button>
+                    {/* Je veux rajouter un bouton "Ajouter un étudiant" en cliquant dessus ça m'envoie vers une liste d'étudiants, puis je choisis un étudiant comme présent et ça me renvoie à la liste initiale (qui est sur ce fichier) avec le nouvel étudiant choisi */}
+                    <button class="text-sm font-semibold leading-6 text-gray-900" onClick={handleAddStudent}>Ajouter un étudiant<span aria-hidden="true"> →</span></button>
+                    </div>
+
 </main>
     );
 }

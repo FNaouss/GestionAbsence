@@ -6,7 +6,7 @@ const AbsenceTable = () => {
 
   useEffect(() => {
     // Fetch absence data from database
-    fetch('http://localhost:3001/rpc/get_absences?etudiant_id=4')
+    fetch('http://localhost:3001/rpc/get_absences?etudiant_id=3')
       .then((response) => response.json())
       .then((data) => setAbsencesData(data));
   }, []);
